@@ -19,11 +19,22 @@ if (!isset($_SESSION['rabo'])) {
 if (!isset($_SESSION['tamanho'])) {
     $_SESSION['tamanho'] = 0;
 }
+if (!isset($_SESSION['vida'])) {
+    $_SESSION['vida'] = 1;
+}
 
 
 if (!isset($_SESSION['fruta'])) {
     $_SESSION['fruta'] = rand(1, 2500);
 }
+
+//morte na borda
+if($_SESSION['pos'] > 2500 ||
+    $_SESSION['pos'] < 1 || 
+    ($_SESSION['pos']%50==0 && $_SESSION['lado']=='d') ||
+    (($_SESSION['pos']-1)%50==0 && $_SESSION['lado']=='e')){
+        $_SESSION['vida']=0;
+    }
 
 
 
@@ -47,10 +58,31 @@ if ($_SESSION['fruta'] == $_SESSION['pos']) {
 }
 
 
+//morte na borda
+if($_SESSION['pos'] > 2500 ||
+    $_SESSION['pos'] < 0 || 
+    ($_SESSION['pos']%50==0 && $_SESSION['lado']=='d') ||
+    (($_SESSION['pos']-1)%50==0 && $_SESSION['lado']=='e')){
+        if($_SESSION['pos'] < 50){
+            $_SESSION['pos']+=50;
+        }
+        elseif($_SESSION['pos'] >2500){
+            $_SESSION['pos']-=50;
+        }
+        $_SESSION['vida']=0;
+    }
+
+
+
 $array_rabo = explode(",", $string_rabo);
 $array_rabo = array_reverse($array_rabo);
-//$array_rabo = array_splice($array_rabo, 5);
+//autofagia
+for($x = 1;$x<sizeof($array_rabo);$x++){
+    if($_SESSION['pos'] == $array_rabo[$x]){
+        $_SESSION['vida'] = 0;
+    }
 
+}
 
 ?>
 
@@ -60,9 +92,15 @@ $array_rabo = array_reverse($array_rabo);
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="refresh" content="0.1">
+    <?php
+    if ($_SESSION['vida'] == 1) {
+    ?>
+        <meta http-equiv="refresh" content="0.1">
+    <?php
+    }
+    ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2048</title>
+    <title>Snake PHP</title>
     <style>
         body {
             width: 1000px;
@@ -76,7 +114,7 @@ $array_rabo = array_reverse($array_rabo);
             height: 700px;
             background-color: #222;
             padding-top: 1px;
-            /* border-radius: 10px; */
+
 
         }
 
@@ -87,7 +125,6 @@ $array_rabo = array_reverse($array_rabo);
             margin-left: 1px;
             margin-top: 1px;
             float: left;
-            /* border-radius: 6px; */
 
         }
 
@@ -107,27 +144,17 @@ $array_rabo = array_reverse($array_rabo);
             top: 719px;
             left: 354px;
         }
-        
 
-        /* #p50{
-    background-color: blue;
-} */
         <?php
-        // $array_rabo = explode(",", $string_rabo);
-        // $array_rabo = array_reverse($array_rabo);
-        // $array_rabo = array_splice($array_rabo, 5);
-        
-      
+
         for ($t = 1; $t <= $_SESSION['tamanho']; $t++) {
-      
+
         ?>#p<?= $array_rabo[$t] ?> {
             background-color: green;
         }
 
         <?php
         }
-       
-
         ?>#p<?= $_SESSION['fruta'] ?> {
             background-color: yellow;
         }
@@ -154,7 +181,6 @@ $array_rabo = array_reverse($array_rabo);
         <?php
         }
         ?>
-
     </div>
     <form action="snake.php" method="post">
 
@@ -166,18 +192,12 @@ $array_rabo = array_reverse($array_rabo);
     </form>
     <div id="debug">
         <?php
-        array_splice($array_rabo, $_SESSION['tamanho'] +1);
-        $array_rabo = array_reverse($array_rabo);
-        $_SESSION['rabo'] = implode(",", $array_rabo);
-        print_r($array_rabo);
+       // array_splice($array_rabo, $_SESSION['tamanho'] + 1);
+       // $array_rabo = array_reverse($array_rabo);
+       // $_SESSION['rabo'] = implode(",", $array_rabo);
+      //  print_r($array_rabo);
         ?>
-        <!-- -->
         <br>
-        <!-- $_SESSION['tamanho']  -->
-        <?php
-
-        ?>
-
     </div>
     <script>
         window.addEventListener("keydown", handleInput, {
